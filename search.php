@@ -1,75 +1,39 @@
-<?php
-/**
- * Search Template
- *
- * The search template is loaded when a visitor uses the search form to search for something
- * on the site.
- *
- * @package Unique
- * @subpackage Template
- * @since 0.1.0
- * @author Justin Tadlock <justin@justintadlock.com>
- * @copyright Copyright (c) 2012, Justin Tadlock
- * @link http://themehybrid.com/themes/unique
- * @license http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
- */
+<?php get_header(); // Loads the header.php template. ?>
 
-get_header(); // Loads the header.php template. ?>
+	<div id="content" class="hfeed">
 
-	<?php do_atomic( 'before_content' ); // unique_before_content ?>
+		<?php get_template_part( 'loop-meta' ); // Loads the loop-meta.php template. ?>
 
-	<div id="content">
+		<?php if ( have_posts() ) : ?>
 
-		<?php do_atomic( 'open_content' ); // unique_open_content ?>
+			<?php while ( have_posts() ) : the_post(); ?>
 
-		<div class="hfeed">
+				<article id="post-<?php the_ID(); ?>" class="<?php hybrid_entry_class(); ?>">
 
-			<?php get_template_part( 'loop-meta' ); // Loads the loop-meta.php template. ?>
+					<header class="entry-header">
+						<?php echo apply_atomic_shortcode( 'entry_title', '[entry-title]' ); ?>
+					</header><!-- .entry-header -->
 
-			<?php if ( have_posts() ) : ?>
+					<div class="entry-summary">
+						<?php the_excerpt(); ?>
+					</div><!-- .entry-summary -->
 
-				<?php while ( have_posts() ) : the_post(); ?>
+					<footer class="entry-footer">
+						<?php echo apply_atomic_shortcode( 'entry_meta', '<div class="entry-meta">' . sprintf( __( '[entry-published] &mdash; <code>%s</code>', 'unique' ), get_permalink() ) . '</div>' ); ?>
+					</footer><!-- .entry-footer -->
 
-					<?php do_atomic( 'before_entry' ); // unique_before_entry ?>
+				</article><!-- .hentry -->
 
-					<article id="post-<?php the_ID(); ?>" class="<?php hybrid_entry_class(); ?>">
+			<?php endwhile; ?>
 
-						<?php do_atomic( 'open_entry' ); // unique_open_entry ?>
+		<?php else : ?>
 
-						<header class="entry-header">
-							<?php echo apply_atomic_shortcode( 'entry_title', '[entry-title]' ); ?>
-						</header><!-- .entry-header -->
+			<?php get_template_part( 'loop-error' ); // Loads the loop-error.php template. ?>
 
-						<div class="entry-summary">
-							<?php the_excerpt(); ?>
-						</div><!-- .entry-summary -->
-
-						<footer class="entry-footer">
-							<?php echo apply_atomic_shortcode( 'entry_meta', '<div class="entry-meta">' . sprintf( __( '[entry-published] &mdash; <code>%s</code>', 'unique' ), get_permalink() ) . '</div>' ); ?>
-						</footer><!-- .entry-footer -->
-
-						<?php do_atomic( 'close_entry' ); // unique_close_entry ?>
-
-					</article><!-- .hentry -->
-
-					<?php do_atomic( 'after_entry' ); // unique_after_entry ?>
-
-				<?php endwhile; ?>
-
-			<?php else : ?>
-
-				<?php get_template_part( 'loop-error' ); // Loads the loop-error.php template. ?>
-
-			<?php endif; ?>
-
-		</div><!-- .hfeed -->
-
-		<?php do_atomic( 'close_content' ); // unique_close_content ?>
+		<?php endif; ?>
 
 		<?php get_template_part( 'loop-nav' ); // Loads the loop-nav.php template. ?>
 
 	</div><!-- #content -->
-
-	<?php do_atomic( 'after_content' ); // unique_after_content ?>
 
 <?php get_footer(); // Loads the footer.php template. ?>

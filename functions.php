@@ -20,10 +20,10 @@
  *
  * @package    Unique
  * @subpackage Functions
- * @version    0.1.0
+ * @version    0.2.0
  * @since      0.1.0
  * @author     Justin Tadlock <justin@justintadlock.com>
- * @copyright  Copyright (c) 2012, Justin Tadlock
+ * @copyright  Copyright (c) 2012 - 2013, Justin Tadlock
  * @link       http://themehybrid.com/themes/unique
  * @license    http://www.gnu.org/licenses/old-licenses/gpl-2.0.html
  */
@@ -47,10 +47,7 @@ function unique_theme_setup() {
 	$prefix = hybrid_get_prefix();
 
 	/* Load unique theme includes. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/customize.php' );
-	require_once( trailingslashit( THEME_DIR ) . 'includes/media.php' );
-	require_once( trailingslashit( THEME_DIR ) . 'includes/post-formats.php' );
-	require_once( trailingslashit( THEME_DIR ) . 'includes/shortcodes.php' );
+	require_once( trailingslashit( THEME_DIR ) . 'inc/media.php' );
 
 	/* Add theme support for core framework features. */
 	add_theme_support( 'hybrid-core-menus', array( 'primary', 'secondary', 'subsidiary' ) );
@@ -58,18 +55,22 @@ function unique_theme_setup() {
 	add_theme_support( 'hybrid-core-widgets' );
 	add_theme_support( 'hybrid-core-shortcodes' );
 	add_theme_support( 'hybrid-core-theme-settings', array( 'footer' ) );
-	add_theme_support( 'hybrid-core-drop-downs' );
+	add_theme_support( 'hybrid-core-scripts', array( 'comment-reply' ) );
+	add_theme_support( 'hybrid-core-styles', array( '25px', 'gallery', 'parent', 'style' ) );
 	add_theme_support( 'hybrid-core-template-hierarchy' );
-	add_theme_support( 'hybrid-core-seo' );
 
 	/* Add theme support for framework extensions. */
-	add_theme_support( 'theme-layouts', array( '1c', '2c-l', '2c-r', '3c-l', '3c-r', '3c-c' ) );
+	add_theme_support( 
+		'theme-layouts', 
+		array( '1c', '2c-l', '2c-r', '3c-l', '3c-r', '3c-c' ),
+		array( 'default' => '2c-l', 'customizer' => true )
+	);
+
 	add_theme_support( 'loop-pagination' );
 	add_theme_support( 'get-the-image' );
 	add_theme_support( 'breadcrumb-trail' );
 	add_theme_support( 'cleaner-gallery' );
 	add_theme_support( 'cleaner-caption' );
-	add_theme_support( 'entry-views' );
 
 	/* Add theme support for WordPress features. */
 	add_theme_support( 'automatic-feed-links' );
@@ -79,10 +80,10 @@ function unique_theme_setup() {
 	add_theme_support(
 		'custom-header',
 		array(
-			'width' => 1080,
-			'height' => 200,
+			'width'       => 1080,
+			'height'      => 200,
 			'flex-height' => true,
-			'flex-width' => false,
+			'flex-width'  => false,
 			'header-text' => false
 		)
 	);
@@ -91,11 +92,14 @@ function unique_theme_setup() {
 	add_theme_support( 
 		'custom-background',
 		array(
-			'default-color' => 'f1f1f1',
-			'default-image' => trailingslashit( get_template_directory_uri() ) . 'images/bg.png',
+			'default-color'    => 'f1f1f1',
+			'default-image'    => trailingslashit( get_template_directory_uri() ) . 'images/bg.png',
 			'wp-head-callback' => 'unique_custom_background_callback'
 		)
 	);
+
+	/* Register shortcodes. */
+	add_action( 'init', 'unique_register_shortcodes' );
 
 	/* Embed width/height defaults. */
 	add_filter( 'embed_defaults', 'unique_embed_defaults' );
@@ -114,99 +118,62 @@ function unique_theme_setup() {
 	/* Filters the image/gallery post format archive galleries. */
 	add_filter( "{$prefix}_post_format_archive_gallery_columns", 'unique_archive_gallery_columns' );
 
-	/* Add some additional default theme settings. */
-	add_filter( "{$prefix}_default_theme_settings", 'unique_default_theme_settings' );
-
 	/* Register additional widgets. */
 	add_action( 'widgets_init', 'unique_register_widgets' );
 
 	/* Add additional contact methods. */
 	add_filter( 'user_contactmethods', 'unique_contact_methods' );
 
-	/* Add 'Customize' link to the admin menu. */
-	add_action( 'admin_menu', 'unique_admin_menu', 11 );
-}
+	/* Custom search form template. */
+	add_filter( 'get_search_form', 'unique_search_form' );
 
-/**
- * Creates additional menu pages in the admin menu.
- *
- * @since 0.1.0
- * @access public
- * @return void
- */
-function unique_admin_menu() {
-
-	/* Getting rid of the theme settings page in favor of only using the theme customizer. */
-	remove_submenu_page( 'themes.php', 'theme-settings' );
-
-	/* Add the WordPress 'Customize' page as an admin menu link. */
-	add_theme_page( 
-		esc_html__( 'Customize', 'unique' ), // Settings page name
-		esc_html__( 'Customize', 'unique' ), // Menu name
-		'edit_theme_options',                // Required capability
-		'customize.php'	                     // File to load
-	);
+	/** Hybrid Core 1.6 changes **/
+	add_filter( "{$prefix}_sidebar_defaults", 'unique_sidebar_defaults'  );
+	add_filter( 'cleaner_gallery_defaults',   'unique_gallery_defaults'  );
+	add_filter( 'the_content',                'unique_aside_infinity', 9 );
+	/****************************/
 }
 
 /**
  * Loads extra widget files and registers the widgets.
  * 
- * @since 0.1.0
+ * @since  0.1.0
  * @access public
  * @return void
  */
 function unique_register_widgets() {
 
 	/* Load and register the image stream widget. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/widget-image-stream.php' );
+	require_once( trailingslashit( THEME_DIR ) . 'inc/widget-image-stream.php' );
 	register_widget( 'Unique_Widget_Image_Stream' );
 
 	/* Load and register the newsletter widget. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/widget-newsletter.php' );
+	require_once( trailingslashit( THEME_DIR ) . 'inc/widget-newsletter.php' );
 	register_widget( 'Unique_Widget_Newsletter' );
 
 	/* Load and register the list sub-pages widget. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/widget-list-sub-pages.php' );
+	require_once( trailingslashit( THEME_DIR ) . 'inc/widget-list-sub-pages.php' );
 	register_widget( 'Unique_Widget_List_Sub_Pages' );
 
 	/* Load and register the user profile widget. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/widget-user-profile.php' );
+	require_once( trailingslashit( THEME_DIR ) . 'inc/widget-user-profile.php' );
 	register_widget( 'Unique_Widget_User_Profile' );
 
 	/* Load and register the most-commented posts widget. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/widget-most-commented.php' );
+	require_once( trailingslashit( THEME_DIR ) . 'inc/widget-most-commented.php' );
 	register_widget( 'Unique_Widget_Most_Commented' );
 
-	/* Load and register the most-viewed posts widget. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/widget-most-viewed.php' );
-	register_widget( 'Unique_Widget_Most_Viewed' );
-
 	/* Load and register the image widget. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/widget-image.php' );
+	require_once( trailingslashit( THEME_DIR ) . 'inc/widget-image.php' );
 	register_widget( 'Unique_Widget_Image' );
 
 	/* Load and register the gallery posts widget. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/widget-gallery-posts.php' );
+	require_once( trailingslashit( THEME_DIR ) . 'inc/widget-gallery-posts.php' );
 	register_widget( 'Unique_Widget_Gallery_Posts' );
 
 	/* Load and register the image posts widget. */
-	require_once( trailingslashit( THEME_DIR ) . 'includes/widget-image-posts.php' );
+	require_once( trailingslashit( THEME_DIR ) . 'inc/widget-image-posts.php' );
 	register_widget( 'Unique_Widget_Image_Posts' );
-}
-
-/**
- * Adds custom default theme settings.
- *
- * @since 0.1.0
- * @access public
- * @param array $settings The default theme settings.
- * @return array $settings
- */
-function unique_default_theme_settings( $settings ) {
-
-	$settings['layout'] = '2c-l';
-
-	return $settings;
 }
 
 /**
@@ -246,28 +213,13 @@ function unique_archive_gallery_columns( $columns ) {
 function unique_theme_layout() {
 
 	if ( !is_active_sidebar( 'primary' ) && !is_active_sidebar( 'secondary' ) )
-		add_filter( 'get_theme_layout', 'unique_theme_layout_one_column' );
+		add_filter( 'theme_mod_theme_layout', 'unique_theme_layout_one_column' );
 
-	elseif ( is_attachment() && 'layout-default' == theme_layouts_get_layout() )
-		add_filter( 'get_theme_layout', 'unique_theme_layout_one_column' );
+	elseif ( is_attachment() && wp_attachment_is_image() && 'default' == get_post_layout( get_queried_object_id() ) )
+		add_filter( 'theme_mod_theme_layout', 'unique_theme_layout_one_column' );
 
 	elseif ( is_page_template( 'page/page-template-magazine.php' ) )
-		add_filter( 'get_theme_layout', 'unique_theme_layout_one_column' );
-
-	elseif ( 'layout-default' == theme_layouts_get_layout() )
-		add_filter( 'get_theme_layout', 'unique_theme_layout_global' );
-}
-
-/**
- * Returns the global layout selected by the user.
- *
- * @since 0.1.0
- * @access public
- * @param string $layout
- * @return string
- */
-function unique_theme_layout_global( $layout ) {
-	return 'layout-' . hybrid_get_setting( 'layout' );
+		add_filter( 'theme_mod_theme_layout', 'unique_theme_layout_one_column' );
 }
 
 /**
@@ -279,7 +231,7 @@ function unique_theme_layout_global( $layout ) {
  * @return string
  */
 function unique_theme_layout_one_column( $layout ) {
-	return 'layout-1c';
+	return '1c';
 }
 
 /**
@@ -426,5 +378,125 @@ function unique_contact_methods( $meta ) {
 	/* Return the array of contact methods. */
 	return $meta;
 }
+
+/**
+ * Registers shortcodes for the Unique theme.
+ *
+ * @since 0.1.0
+ */
+function unique_register_shortcodes() {
+
+	/* Adds the [entry-mood] shortcode. */
+	add_shortcode( 'entry-mood', 'unique_entry_mood_shortcode' );
+
+	/* Adds the [entry-views] shortcode. */
+	add_shortcode( 'entry-views', 'unique_entry_views_shortcode' );
+}
+
+/**
+ * Returns the mood for the current post.  The mood is set by the 'mood' custom field.
+ *
+ * @since 0.1.0
+ * @access public
+ * @param array $attr The shortcode arguments.
+ * @return string
+ */
+function unique_entry_mood_shortcode( $attr ) {
+
+	$attr = shortcode_atts( array( 'before' => '', 'after' => '' ), $attr );
+
+	$mood = get_post_meta( get_the_ID(), 'mood', true );
+
+	if ( !empty( $mood ) )
+		$mood = $attr['before'] . convert_smilies( $mood ) . $attr['after'];
+
+	return $mood;
+}
+
+/**
+ * Creates a custom search form by filtering the 'get_search_form' hook.
+ *
+ * @since  0.2.0
+ * @access public
+ * @param  string  $form
+ * @return string
+ */
+function unique_search_form( $form ) {
+
+	$value       = get_search_query() ? esc_attr( get_search_query() ) : '';
+	$placeholder = esc_attr__( 'Enter search terms...', 'unique' );
+
+	$form  = "\n\t\t" . '<form method="get" class="search-form" action="' . trailingslashit( home_url() ) . '">';
+	$form .= "\n\t\t\t" . '<div class="search-wrap">';
+	$form .= "\n\t\t\t\t" . '<input class="search-text" type="text" name="s" value="' . $value . '" placeholder="' . $placeholder . '" />';
+	$form .= "\n\t\t\t\t" . '<input class="search-submit" name="submit" type="submit" value="' . esc_attr__( 'Search', 'unique' ) . '" />';
+	$form .= "\n\t\t\t" . '</div>';
+	$form .= "\n\t\t" . '</form><!-- .search-form -->';
+
+	return $form;
+}
+
+/* === HYBRID CORE 1.6 CHANGES. === 
+ *
+ * The following changes are slated for Hybrid Core version 1.6 to make it easier for 
+ * theme developers to build awesome HTML5 themes. The code will be removed once 1.6 
+ * is released.
+ */
+
+	/**
+	 * Sidebar parameter defaults.
+	 *
+	 * @since  0.2.0
+	 * @access public
+	 * @param  array  $defaults
+	 * @return array
+	 */
+	function unique_sidebar_defaults( $defaults ) {
+
+		$defaults = array(
+			'before_widget' => '<section id="%1$s" class="widget %2$s widget-%2$s">',
+			'after_widget'  => '</section>',
+			'before_title'  => '<h3 class="widget-title">',
+			'after_title'   => '</h3>'
+		);
+
+		return $defaults;
+	}
+
+	/**
+	 * Gallery defaults for the Cleaner Gallery extension.
+	 *
+	 * @since  0.2.0
+	 * @access public
+	 * @param  array  $defaults
+	 * @return array
+	 */
+	function unique_gallery_defaults( $defaults ) {
+
+		$defaults['itemtag']    = 'figure';
+		$defaults['icontag']    = 'div';
+		$defaults['captiontag'] = 'figcaption';
+
+		return $defaults;
+	}
+
+	/**
+	 * Adds an infinity character "&#8734;" to the end of the post content on 'aside' posts.  This 
+	 * is from version 0.1.1 of the Post Format Tools extension.
+	 *
+	 * @since  0.2.0
+	 * @access public
+	 * @param  string $content The post content.
+	 * @return string $content
+	 */
+	function unique_aside_infinity( $content ) {
+
+		if ( has_post_format( 'aside' ) && !is_singular() )
+			$content .= ' <a class="permalink" href="' . get_permalink() . '" title="' . the_title_attribute( array( 'echo' => false ) ) . '">&#8734;</a>';
+
+		return $content;
+	}
+
+/* End Hybrid Core 1.6 section. */
 
 ?>
