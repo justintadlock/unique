@@ -51,7 +51,7 @@ if ( is_singular() || is_front_page() )
 		<h1 class="loop-title"><?php echo esc_attr( get_search_query() ); ?></h1>
 
 		<div class="loop-description">
-			<?php echo wpautop( sprintf( __( 'You are browsing the search results for "%s"', 'hybrid-base' ), esc_attr( get_search_query() ) ) ); ?>
+			<?php echo wpautop( sprintf( __( 'You are browsing the search results for "%s"', 'uniqe' ), esc_attr( get_search_query() ) ) ); ?>
 		</div><!-- .loop-description -->
 
 	<?php } elseif ( is_post_type_archive() ) { ?>
@@ -68,25 +68,25 @@ if ( is_singular() || is_front_page() )
 
 		<?php
 			if ( is_day() )
-				$date = get_the_time( __( 'F d, Y', 'hybrid-base' ) );
+				$date = get_the_time( __( 'F d, Y', 'uniqe' ) );
 			elseif ( is_month() )
-				$date = get_the_time( __( 'F Y', 'hybrid-base' ) );
+				$date = get_the_time( __( 'F Y', 'uniqe' ) );
 			elseif ( is_year() )
-				$date = get_the_time( __( 'Y', 'hybrid-base' ) );
+				$date = get_the_time( __( 'Y', 'uniqe' ) );
 		?>
 
 		<h1 class="loop-title"><?php echo $date; ?></h1>
 
 		<div class="loop-description">
-			<?php echo wpautop( sprintf( __( 'You are browsing the site archives for %s.', 'hybrid-base' ), $date ) ); ?>
+			<?php echo wpautop( sprintf( __( 'You are browsing the site archives for %s.', 'uniqe' ), $date ) ); ?>
 		</div><!-- .loop-description -->
 
 	<?php } elseif ( is_archive() ) { ?>
 
-		<h1 class="loop-title"><?php _e( 'Archives', 'hybrid-base' ); ?></h1>
+		<h1 class="loop-title"><?php _e( 'Archives', 'uniqe' ); ?></h1>
 
 		<div class="loop-description">
-			<?php echo wpautop( __( 'You are browsing the site archives.', 'hybrid-base' ) ); ?>
+			<?php echo wpautop( __( 'You are browsing the site archives.', 'uniqe' ) ); ?>
 		</div><!-- .loop-description -->
 
 	<?php } // End if check ?>

@@ -2,7 +2,7 @@
  * Theme Name: Unique
  * Theme URI: http://themehybrid.com/themes/unique
  * Description: A translation-ready, magazine-/news-style WordPress theme with six dynamic layouts, many custom widgets, three menu locations, unique designs for all nine post formats, support for multi-author sites, and custom page templates. It is packaged with Flexslider, breadcrumbs, numbered pagination, and a powerful thumbnail/image script.
- * Version: 0.2
+ * Version: 0.2.1
  * Author: Justin Tadlock
  * Author URI: http://justintadlock.com
  * Tags: theme-options, threaded-comments, microformats, translation-ready, rtl-language-support, one-column, two-columns, three-columns, right-sidebar, left-sidebar, fixed-width, sticky-post, custom-background, custom-header, custom-menu, full-width-template, post-formats, featured-images
@@ -1955,7 +1955,7 @@ ol.comment-list ol.children {
 	#sidebar-subsidiary .widget {
 		float:  left;
 		width:  30%;
-		margin: 0 5% 0 0;
+		margin: 0 4.99% 0 0;
 	}
 
 	#sidebar-subsidiary .widget:nth-child(3n) {
